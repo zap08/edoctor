@@ -4,13 +4,12 @@ import com.infosys.eDoctor.config.AdminProperties;
 import com.infosys.eDoctor.entity.Admin;
 import com.infosys.eDoctor.entity.Doctor;
 import com.infosys.eDoctor.entity.Patient;
-import com.infosys.eDoctor.repository.AdminRepo;
-import com.infosys.eDoctor.repository.DoctorRepo;
-import com.infosys.eDoctor.repository.FeedbackRepo;
-import com.infosys.eDoctor.repository.PatientRepo;
+import com.infosys.eDoctor.entity.Users;
+import com.infosys.eDoctor.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -24,6 +23,8 @@ public class AdminService {
     PatientRepo patientRepo;
     @Autowired
     FeedbackRepo feedbackRepo;
+    @Autowired
+    private UsersRepo usersRepo;
     @Autowired
     private AdminProperties adminProperties;
 
@@ -47,6 +48,10 @@ public class AdminService {
 
     public long getTotalUsers() {
         return getTotalDoctors() + getTotalPatients();
+    }
+
+    public List<Users> getAllUsers() {
+        return usersRepo.findAll();
     }
 
     //for adding the admin

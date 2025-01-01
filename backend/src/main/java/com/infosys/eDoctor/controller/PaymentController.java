@@ -4,12 +4,15 @@ import com.infosys.eDoctor.DTO.AppointmentDTO;
 import com.infosys.eDoctor.entity.Appointment;
 import com.infosys.eDoctor.service.AppointmentService;
 import com.infosys.eDoctor.service.PaymentService;
+import com.itextpdf.text.DocumentException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.itextpdf.text.DocumentException;
+import com.infosys.eDoctor.service.InvoiceService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,9 @@ public class PaymentController {
 
     @Autowired
     private AppointmentService appointmentService;
+
+    @Autowired
+    private InvoiceService invoiceService;
 
     @PostMapping("/create-checkout-session")
     @CrossOrigin(origins = "http://localhost:3000")
@@ -64,26 +70,56 @@ public class PaymentController {
     @GetMapping("/success")
     public ResponseEntity<?> handleSuccess(@RequestParam("session_id") String sessionId) {
         try {
-            // Verify payment session
             Session session = paymentService.verifyPayment(sessionId);
-
-            // Extract appointmentId from metadata
             String appointmentId = session.getMetadata().get("appointmentId");
 
-            // Update payment status only
             Optional<Appointment> optionalAppointment = appointmentService.getAppointmentEntity(Integer.parseInt(appointmentId));
 
             if (optionalAppointment.isPresent()) {
                 Appointment appointment = optionalAppointment.get();
                 appointment.setAppointmentStatus("PAYMENT_CONFIRMED");
                 appointmentService.updateAppointment(appointment);
-                return ResponseEntity.ok("Payment confirmed and status updated.");
+
+                // Generate invoice
+                double amount = session.getAmountTotal() / 100.0; // Convert from cents to actual currency
+                byte[] pdfBytes = invoiceService.generateInvoice(appointment, amount);
+
+                return ResponseEntity.ok()
+                        .header("Content-Type", "application/pdf")
+                        .header("Content-Disposition", "attachment; filename=invoice-" + appointmentId + ".pdf")
+                        .body(pdfBytes);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
             }
-        } catch (StripeException e) {
+        } catch (StripeException | DocumentException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to verify payment: " + e.getMessage());
+                    .body("Failed to process payment or generate invoice: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/generate-invoice/{appointmentId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<?> generateInvoice(@PathVariable int appointmentId) {
+        try {
+            Optional<Appointment> optionalAppointment = appointmentService.getAppointmentEntity(appointmentId);
+            if (optionalAppointment.isPresent()) {
+                Appointment appointment = optionalAppointment.get();
+
+                // Get payment amount - You might want to store this in the appointment or get it from a payment record
+                double amount = 1000.0; // Replace with actual amount from your payment record
+
+                byte[] pdfBytes = invoiceService.generateInvoice(appointment, amount);
+
+                return ResponseEntity.ok()
+                        .header("Content-Type", "application/pdf")
+                        .header("Content-Disposition", "attachment; filename=invoice-" + appointmentId + ".pdf")
+                        .body(pdfBytes);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (DocumentException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to generate invoice: " + e.getMessage());
         }
     }
 }

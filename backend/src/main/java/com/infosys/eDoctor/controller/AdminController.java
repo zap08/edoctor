@@ -144,4 +144,10 @@ public class AdminController {
         return appointmentService.getPatientsByDoctorAndDate(doctorId, appointmentDate);
     }
 
+    @GetMapping("/getAllUsers")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<?> getAllUsers() {
+        List<Users> users = adminService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 }
