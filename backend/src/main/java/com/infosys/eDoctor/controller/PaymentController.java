@@ -105,8 +105,8 @@ public class PaymentController {
             if (optionalAppointment.isPresent()) {
                 Appointment appointment = optionalAppointment.get();
 
-                // Get payment amount - You might want to store this in the appointment or get it from a payment record
-                double amount = 1000.0; // Replace with actual amount from your payment record
+                //currently hardcoded but need to replace with actual inputted amount
+                double amount = 1000.0;
 
                 byte[] pdfBytes = invoiceService.generateInvoice(appointment, amount);
 
