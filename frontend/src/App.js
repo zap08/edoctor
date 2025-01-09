@@ -25,6 +25,7 @@ import BookingAppointment from './components/BookingAppointment';
 import FeedbackListAdmin from './components/FeedbackListAdmin';
 import PatientProfile from './components/PatientProfile';
 import UserList from './components/sections/UserList';
+import PaymentSuccess from './components/PaymentSuccess';
 function App() {
   // State to hold doctor data
   const [doctors, setDoctors] = useState([]);
@@ -62,6 +63,7 @@ function App() {
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/AdminLogin" element={<AdminLogin/>}/>
         <Route path="/payment" element={<Payment />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path='PatientProfile' element={<PatientProfile/>}/>
        {/* <Route path="/userlist" element={<UserList />} /> */}
       </Routes>

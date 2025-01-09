@@ -97,29 +97,36 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/generate-invoice/{appointmentId}")
+    @GetMapping("/verify-and-generate-invoice/{sessionId}")
     @CrossOrigin(origins = "http://localhost:3000")
-    public ResponseEntity<?> generateInvoice(@PathVariable int appointmentId) {
+    public ResponseEntity<?> verifyAndGenerateInvoice(@PathVariable String sessionId) {
         try {
-            Optional<Appointment> optionalAppointment = appointmentService.getAppointmentEntity(appointmentId);
-            if (optionalAppointment.isPresent()) {
-                Appointment appointment = optionalAppointment.get();
+            Session session = paymentService.verifyPayment(sessionId);
 
-                //currently hardcoded but need to replace with actual inputted amount
-                double amount = 1000.0;
+            if (session != null && "complete".equals(session.getStatus())) {
+                String appointmentId = session.getMetadata().get("appointmentId");
+                double amount = Double.parseDouble(session.getMetadata().get("amount"));
 
-                byte[] pdfBytes = invoiceService.generateInvoice(appointment, amount);
+                Optional<Appointment> optionalAppointment = appointmentService.getAppointmentEntity(Integer.parseInt(appointmentId));
 
-                return ResponseEntity.ok()
-                        .header("Content-Type", "application/pdf")
-                        .header("Content-Disposition", "attachment; filename=invoice-" + appointmentId + ".pdf")
-                        .body(pdfBytes);
-            } else {
-                return ResponseEntity.notFound().build();
+                if (optionalAppointment.isPresent()) {
+                    Appointment appointment = optionalAppointment.get();
+                    appointment.setAppointmentStatus("PAYMENT_CONFIRMED");
+                    appointmentService.updateAppointment(appointment);
+
+                    byte[] pdfBytes = invoiceService.generateInvoice(appointment, amount);
+
+                    return ResponseEntity.ok()
+                            .header("Content-Type", "application/pdf")
+                            .header("Content-Disposition", "inline; filename=invoice-" + appointmentId + ".pdf")
+                            .body(pdfBytes);
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
             }
-        } catch (DocumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or incomplete payment session");
+        } catch (StripeException | DocumentException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to generate invoice: " + e.getMessage());
+                    .body("Failed to process payment or generate invoice: " + e.getMessage());
         }
     }
 }

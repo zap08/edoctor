@@ -10,20 +10,25 @@ function AdminLogin() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    const loginData = { adminname, password }; // Correct field names
-    console.log('Admin login data:', loginData);
-
+  
+    if (!adminname.trim()) {
+      alert('Admin username is required.');
+      return;
+    }
+  
+    if (!password.trim()) {
+      alert('Password is required.');
+      return;
+    }
+  
+    const loginData = { adminname, password };
+  
     try {
-      const response = await axios.post('http://localhost:8000/admin/login', loginData); // Updated endpoint
-
-      if (response.data === true) { // Assuming backend returns true for success
-        console.log('Login successful:', response.data);
-
-        // Store adminname in localStorage
+      const response = await axios.post('http://localhost:8000/admin/login', loginData);
+  
+      if (response.data === true) {
         localStorage.setItem('adminname', adminname);
-
-        navigate('/AdminDashboard'); // Redirect upon successful login
+        navigate('/AdminDashboard');
       } else {
         alert('Login unsuccessful. Please check your credentials.');
       }
@@ -36,6 +41,9 @@ function AdminLogin() {
       console.error('Login error:', error);
     }
   };
+  
+
+  
 
   return (
     <div className="login-container">
