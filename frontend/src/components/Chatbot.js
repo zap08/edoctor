@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import './Roboto.css';
 
 function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: 'bot', text: 'Hi! How can I assist you today? Please select an option below.' },
   ]);
@@ -13,7 +12,6 @@ function Chatbot() {
   const chatbotBodyRef = useRef(null);
   const navigate = useNavigate(); // Hook to navigate to other pages
   
-  // Predefined Questions and Answers
   const questionsAndAnswers = {
     login: [
       { question: 'How do I log in?', answer: 'Use your registered email and password to log in on the login page.' },
@@ -57,17 +55,14 @@ function Chatbot() {
     ],
   };
 
-  // Toggle chatbot visibility
-  const toggleChatbot = () => setIsOpen(!isOpen);
 
-  // Scroll to the bottom of the chat when messages are updated
   useEffect(() => {
+    // Automatically scroll to the bottom of the chat when messages are updated
     if (chatbotBodyRef.current) {
       chatbotBodyRef.current.scrollTop = chatbotBodyRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Handle question selection
   const handleQuestionClick = (qa) => {
     setMessages((prev) => [
       ...prev,
@@ -76,7 +71,6 @@ function Chatbot() {
     ]);
   };
 
-  // Set the selected option (login, register, etc.)
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
     setMessages((prev) => [
@@ -86,7 +80,6 @@ function Chatbot() {
     ]);
   };
 
-  // Handle "Back" option to go back to main menu
   const handleBack = () => {
     setSelectedOption(null);
     setMessages((prev) => [
@@ -96,69 +89,55 @@ function Chatbot() {
   };
 
   const Home = () => {
-    navigate('/Home'); // Navigating to the Home page
+    navigate(-1); // Navigate to the previous page
   };
 
   return (
     <>
-      {/* Chatbot Trigger */}
-      <div className="chatbot-trigger">
-        <button className="open-chatbot-btn" onClick={toggleChatbot}>
-          <i className="fas fa-comments"></i>
-        </button>
-        <p className="chatbot-label">Chat with Us</p>
-      </div>
-
       {/* Chatbot Container */}
-      {isOpen && (
-        <div className="chatbot-container">
-          <div className="chatbot-header">
-            Chat with Us
-            <button onClick={Home}>X</button>
-          </div>
+      <div className="chatbot-container">
+        <div className="chatbot-header">
+          Chat with Us
+          <button onClick={Home}>X</button>
+        </div>
 
-          <div className="chatbot-body" ref={chatbotBodyRef}>
-            {messages.map((msg, i) => (
-              <div key={i} className={`chatbot-message ${msg.sender === 'bot' ? 'bot-message' : 'user-message'}`}>
-                {msg.text}
-              </div>
-            ))}
-          </div>
-
-          <div className="chatbot-footer">
-            {/* Back button */}
-            {selectedOption && (
-              <button className="back-btn" onClick={handleBack}>Back</button>
-            )}
-
-            {/* Display option buttons */}
-            {!selectedOption && (
-              <div className="options">
-                <button className="chatbot-option-btn" onClick={() => handleOptionSelect('login')}>Login</button>
-                <button className="chatbot-option-btn" onClick={() => handleOptionSelect('register')}>Register</button>
-                <button className="chatbot-option-btn" onClick={() => handleOptionSelect('appointment')}>Book Appointment</button>
-                <button className="chatbot-option-btn" onClick={() => handleOptionSelect('password')}>Password Reset</button>
-              </div>
-            )}
-
-            {/* Display relevant questions based on selected option */}
-            {selectedOption && questionsAndAnswers[selectedOption].map((qa, i) => (
-              <button
-                key={i}
-                className="chatbot-question-btn"
-                onClick={() => handleQuestionClick(qa)}
-              >
-                {qa.question}
-              </button>
-            ))}
-
-            {/* Robot Container */}
-            <div className="robot-container">
-              <Spline scene="https://prod.spline.design/IIk4KMVYUwVHorO8/scene.splinecode" />
+        <div className="chatbot-body" ref={chatbotBodyRef}>
+          {messages.map((msg, i) => (
+            <div key={i} className={`chatbot-message ${msg.sender === 'bot' ? 'bot-message' : 'user-message'}`}>
+              {msg.text}
             </div>
+          ))}
+        </div>
+
+        <div className="chatbot-footer">
+          {selectedOption && (
+            <button className="back-btn" onClick={handleBack}>Back</button>
+          )}
+
+          {!selectedOption && (
+            <div className="options">
+              <button className="chatbot-option-btn" onClick={() => handleOptionSelect('login')}>Login</button>
+              <button className="chatbot-option-btn" onClick={() => handleOptionSelect('register')}>Register</button>
+              <button className="chatbot-option-btn" onClick={() => handleOptionSelect('appointment')}>Book Appointment</button>
+              <button className="chatbot-option-btn" onClick={() => handleOptionSelect('password')}>Password Reset</button>
+            </div>
+          )}
+
+          {selectedOption && questionsAndAnswers[selectedOption].map((qa, i) => (
+            <button
+              key={i}
+              className="chatbot-question-btn"
+              onClick={() => handleQuestionClick(qa)}
+            >
+              {qa.question}
+            </button>
+          ))}
+
+          <div className="robot-container">
+            <Spline scene="https://prod.spline.design/IIk4KMVYUwVHorO8/scene.splinecode" />
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }

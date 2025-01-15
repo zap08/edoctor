@@ -180,15 +180,13 @@ function Dashboard() {
       </main>
       <div className="dashboard-overview">
   {stats.totalUsers > 0 ? (
-    <div className="overview-card">
-      <FontAwesomeIcon icon={faUser} />
-      <h3>Users</h3>
-      <p>Total: {stats.totalUsers}</p>
+    <div >
+      
     </div>
   ) : (
     <p>No user data available</p>
   )}
-</div>
+ </div>
 
     </div>
     

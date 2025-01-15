@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import { green } from "@mui/material/colors";
 import "./ViewAppointments.css";
 
 const ViewAppointments = () => {
@@ -10,6 +13,7 @@ const ViewAppointments = () => {
   const [responseMessage, setResponseMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   useEffect(() => {
     const storedDoctorId = localStorage.getItem("doctorId");
@@ -54,6 +58,7 @@ const ViewAppointments = () => {
   };
 
   const handlePostStatus = async (appointmentId, status) => {
+    setStatusLoading(true);
     try {
       const response = await axios.put(
         `http://localhost:8000/doctor/updateAppointmentStatus?appointmentId=${appointmentId}&status=${status}`
@@ -65,6 +70,8 @@ const ViewAppointments = () => {
       console.error("Error updating status:", error.message);
       setError("Failed to update appointment status. Please try again.");
       setResponseMessage("");
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -177,16 +184,29 @@ const ViewAppointments = () => {
                 <td>{appt.appointmentStatus}</td>
                 <td>
                   {appt.appointmentStatus === "Pending" && (
-                    <select
-                      onChange={(e) => handleStatusChange(appt.appointmentId, e)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>
-                        Update Status
-                      </option>
-                      <option value="Scheduled">Scheduled</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <select
+                        onChange={(e) => handleStatusChange(appt.appointmentId, e)}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Update Status
+                        </option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                      {statusLoading && (
+                        <Box sx={{ position: "relative", marginLeft: "10px" }}>
+                          <CircularProgress
+                            size={20}
+                            sx={{
+                              color: green[500],
+                              zIndex: 1,
+                            }}
+                          />
+                        </Box>
+                      )}
+                    </div>
                   )}
                 </td>
               </tr>
