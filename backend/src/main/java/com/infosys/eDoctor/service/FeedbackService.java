@@ -70,4 +70,15 @@ public class FeedbackService {
                 feedback.getAppointment().getAppointmentId()
         );
     }
+
+    public double getAverageRatingForDoctor(String doctorId) {
+        List<Feedback> doctorFeedbacks = feedbackRepository.findByDoctor_DoctorId(doctorId);
+        if (doctorFeedbacks.isEmpty()) {
+            return 0.0;
+        }
+        return doctorFeedbacks.stream()
+                .mapToInt(Feedback::getRating)
+                .average()
+                .orElse(0.0);
+    }
 }

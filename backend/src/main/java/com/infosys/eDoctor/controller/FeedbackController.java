@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/feedback")
@@ -24,9 +26,15 @@ public class FeedbackController {
 
     @GetMapping("/doctor/{doctorId}")
     @CrossOrigin(origins = "http://localhost:3000")
-    public ResponseEntity<List<FeedbackDTO>> getFeedbacksByDoctor(@PathVariable String doctorId) {
+    public ResponseEntity<Map<String, Object>> getFeedbacksByDoctor(@PathVariable String doctorId) {
         List<FeedbackDTO> feedbacks = feedbackService.getFeedbacksByDoctor(doctorId);
-        return ResponseEntity.ok(feedbacks);
+        double averageRating = feedbackService.getAverageRatingForDoctor(doctorId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("feedbacks", feedbacks);
+        response.put("averageRating", averageRating);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/patient/{patientId}")
