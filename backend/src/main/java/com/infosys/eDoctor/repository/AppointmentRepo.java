@@ -24,6 +24,13 @@ public interface AppointmentRepo extends JpaRepository<Appointment, Integer> {
     // Find appointments by appointment date
     List<Appointment> findByAppointmentDate(LocalDate date);
 
+
+    List<Appointment> findByDoctor_DoctorIdAndAppointmentStatus(String doctorId, String status);
+
+    long countByDoctor_DoctorId(String doctorId);
+
+    long countByDoctor_DoctorIdAndAppointmentStatus(String doctorId, String status);
+
     // Query to count appointments by doctorId and appointmentDate
     @Query("SELECT COUNT(a) FROM Appointment a WHERE a.doctor.doctorId = :doctorId AND a.appointmentDate = :date")
     int countAppointmentsByDoctorAndDate(String doctorId, LocalDate date);

@@ -1,5 +1,6 @@
 package com.infosys.eDoctor.service;
 
+
 import com.infosys.eDoctor.DTO.AppointmentDTO;
 import com.infosys.eDoctor.DTO.PatientDTO;
 import com.infosys.eDoctor.DTO.PatientWithAppointmentDTO;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -188,5 +190,27 @@ public class AppointmentService {
         appointment.setAppointmentDate(appointmentDTO.getAppointmentDate());
         appointment.setAppointmentStatus("Pending");
         return appointmentRepository.save(appointment);
+    }
+
+    public List<AppointmentDTO> getCompletedAppointmentsByDoctorId(String doctorId) {
+        return appointmentRepository.findByDoctor_DoctorIdAndAppointmentStatus(doctorId, "Completed")
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<AppointmentDTO> getCanceledAppointmentsByDoctorId(String doctorId) {
+        return appointmentRepository.findByDoctor_DoctorIdAndAppointmentStatus(doctorId, "Cancelled")
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public long countTotalAppointmentsByDoctorId(String doctorId) {
+        return appointmentRepository.countByDoctor_DoctorId(doctorId);
+    }
+
+    public long countAppointmentsByDoctorIdAndStatus(String doctorId, String status) {
+        return appointmentRepository.countByDoctor_DoctorIdAndAppointmentStatus(doctorId, status);
     }
 }

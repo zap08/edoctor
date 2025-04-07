@@ -1,6 +1,7 @@
 package com.infosys.eDoctor.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.infosys.eDoctor.DTO.AppointmentDTO;
 import com.infosys.eDoctor.DTO.DoctorDTO;
 import com.infosys.eDoctor.entity.Appointment;
 import com.infosys.eDoctor.entity.Doctor;
@@ -12,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -149,6 +152,62 @@ public class DoctorController {
 
             String responseMessage = "Appointment status updated to " + status + " and patient notified.";
             return ResponseEntity.ok(responseMessage);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
+        }
+    }
+
+    @GetMapping("/totalAppointments/{doctorId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<Long> getTotalAppointments(@PathVariable String doctorId) {
+        long totalAppointments = appointmentService.countTotalAppointmentsByDoctorId(doctorId);
+        return ResponseEntity.ok(totalAppointments);
+    }
+
+    @GetMapping("/canceledAppointments/{doctorId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<Long> getCanceledAppointments(@PathVariable String doctorId) {
+        // Only return the count of canceled appointments
+        long canceledCount = appointmentService.countAppointmentsByDoctorIdAndStatus(doctorId, "Cancelled");
+        return ResponseEntity.ok(canceledCount);
+    }
+
+    @GetMapping("/completedAppointments/{doctorId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<Long> getCompletedAppointments(@PathVariable String doctorId) {
+        // Only return the count of completed appointments
+        long completedCount = appointmentService.countAppointmentsByDoctorIdAndStatus(doctorId, "Completed");
+        return ResponseEntity.ok(completedCount);
+    }
+
+    // For updating appointment status to "Completed"
+    @PutMapping("/completeAppointment/{appointmentId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<String> completeAppointment(@PathVariable int appointmentId) {
+        Optional<Appointment> optionalAppointment = appointmentService.getAppointmentEntity(appointmentId);
+
+        if (optionalAppointment.isPresent()) {
+            Appointment appointment = optionalAppointment.get();
+
+            // Update the status to Completed
+            appointment.setAppointmentStatus("Completed");
+            appointmentService.updateAppointment(appointment);
+
+            // Notify the patient
+            Patient patient = appointment.getPatient();
+            Doctor doctor = appointment.getDoctor();
+
+            if (patient != null && doctor != null) {
+                String patientSubject = "Appointment Completed";
+                String patientBody = "Dear " + patient.getPatientName() + ",\n\n" +
+                        "Your appointment with Dr. " + doctor.getDoctorName() +
+                        " on " + appointment.getAppointmentDate() + " has been marked as completed.\n\n" +
+                        "Thank you for using our service!\n\nRegards,\nThe eDoctor Team";
+
+                appointmentService.sendEmail(patient.getUsers2().getEmail(), patientSubject, patientBody);
+            }
+
+            return ResponseEntity.ok("Appointment marked as completed and patient notified.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
