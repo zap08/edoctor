@@ -91,3 +91,8 @@ E-Doctor is a comprehensive medical appointment management system built with Spr
 - MySQL Database
 - Node.js and npm (for frontend)
 - Stripe account for payment processing
+
+
+
+
+#updated this file temp...
